@@ -28,6 +28,9 @@ helpers do
   end
 end
 
+before do
+  @show_hit_or_stay_buttons = true
+end
 
 get '/' do
   if session[:player_name]
@@ -57,5 +60,21 @@ get '/game' do
   session[:player_cards] << session[:deck].pop
   session[:dealer_cards] << session[:deck].pop
   session[:player_cards] << session[:deck].pop
+  erb :game
+end
+
+post '/game/player/hit' do
+  session[:player_cards] << session[:deck].pop
+  if calculate_total(session[:player_cards]) > 21
+    @error = "Sorry, you busted."
+    @show_hit_or_stay_buttons = false
+  end
+
+  erb :game
+end
+
+post '/game/player/stay' do
+  @success = "You have choisen to stay!"
+  @show_hit_or_stay_buttons = false
   erb :game
 end
