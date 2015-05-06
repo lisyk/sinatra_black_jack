@@ -47,6 +47,23 @@ helpers do
 
     "<img src='/images/cards/#{suit}_#{value}.jpg'>"
   end
+
+  def winner!(msg)
+    @play_again = true
+    @show_hit_or_stay_buttons = false
+    @success = "#{session[:player_name]} wins! #{msg}"
+  end
+
+  def loser!(msg)
+    @play_again = true
+    @show_hit_or_stay_buttons = false
+    @error = "#{session[:player_name]} loses. #{msg}"
+  end
+
+  def tie!(msg)
+    @play_again = true
+    @success = "It's a tie! #{msg}"
+  end
 end
 
 before do
@@ -77,6 +94,8 @@ post '/new_player' do
 end
 
 get '/game' do
+  session[:turn] = session[:player_name]
+
   suits = ['H', 'D', 'C', 'S']
   values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
   session[:deck] = suits.product(values).shuffle!
@@ -94,11 +113,10 @@ post '/game/player/hit' do
 
   player_cards = calculate_total(session[:player_cards])
     if player_cards == 21
-      @success = "Congtratulations! #{session[:player_name]} hit blackjack!"
-      @show_hit_or_stay_buttons = false
+      winner!("#{session[:player_name]} hit blackjack.")
+
     elsif player_cards > 21
-      @error = "Sorry, you busted."
-      @show_hit_or_stay_buttons = false
+      loser!("#{session[:player_name]} busted.")
   end
 
   erb :game
@@ -111,13 +129,14 @@ post '/game/player/stay' do
 end
 
 get '/game/dealer' do
+  session[:turn] = "dealer"
   @show_hit_or_stay_buttons = false
   dealer_total = calculate_total(session[:dealer_cards])
 
   if dealer_total == 21
-    @error = "Sorry, dealer hit blackjack."
+    loser!("Dealer hit blackjack.")
   elsif dealer_total > 21
-    @success = "Congratulations, dealer busted. You win."
+    winner!("Dealer busted at #{dealer_total}.")
   elsif dealer_total >= 17
     redirect '/game/compare'
   else
@@ -138,13 +157,17 @@ get '/game/compare' do
   dealer_total = calculate_total(session[:dealer_cards])
 
   if player_total < dealer_total
-    @error = "Sorry, you lost."
+    loser!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
   elsif player_total > dealer_total
-    @success = "Congrats, you won!"
+    winner!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.")
   else
-    @success = "It's a tie!"
+    tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.")
   end
 
   erb :game
 
+end
+
+get '/game_over' do
+  erb :game_over
 end
