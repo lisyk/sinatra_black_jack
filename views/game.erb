@@ -1,3 +1,12 @@
+<div id='game'>
+
+  <%if @loser %>
+    <div class="alert alert-error"><%=@loser%></div>
+  <% end %>
+  <%if @winner %>
+    <div class="alert alert-success"><%=@winner%></div>
+  <% end %>
+
 <h1>Black Jack</h1>
 <h3><%= session[:player_name] %> welcome to the game!</h3>
 <% if @play_again %>
@@ -9,7 +18,7 @@
 <% end %>
 
 <div class='well'>
-<h4>Dealer's cards</h4>
+<h4>Dealer's cards:</h4>
 
   <% session[:dealer_cards].each_with_index do |card, i| %>
   <% if session[:turn] != "dealer" && i == 0 %>
@@ -22,7 +31,7 @@
   <% if @show_dealer_hit_button %>
   <p>
     <h5>Dealer has <%= calculate_total(session[:dealer_cards])%> and will hit.</h5>
-    <form action='/game/dealer/hit' method='post'>
+    <form id='dealer_hit' action='/game/dealer/hit' method='post'>
       <input type='submit' class='btn btn-primary' value='Click to see dealer card &rarr;'>
     </form>
   </p>
@@ -30,7 +39,7 @@
 
 </div>
 
-<div class='well'>
+<div id='player_cards' class='well'>
 <h4>Player's cards</h4>
   <% session[:player_cards].each do |card| %>
   <%= card_image(card) %>
@@ -53,3 +62,4 @@
   <input type='submit' class='btn btn-warning' value='Stay'>
 </form>
 <% end %>
+</div>
